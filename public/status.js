@@ -1,4 +1,5 @@
 const daysShown = 90;
+const compactDays = 30;
 const staleAfterMs = 20 * 60 * 1000;
 const snapshotAssignment = 'globalThis.peledexStatus = ';
 let snapshot = globalThis.peledexStatus ?? {};
@@ -16,6 +17,12 @@ const cards = [...document.querySelectorAll('[data-service]')];
 const summary = document.querySelector('.summary');
 const summaryTitle = document.querySelector('#summary-title');
 const updated = document.querySelector('#updated');
+const availability = document.querySelector('.availability');
+const historyPeriod = document.querySelector('#history-period');
+const historyToggle = document.querySelector('#history-window');
+const compactLayout = matchMedia('(max-width: 39rem)');
+let expandedHistory = false;
+let visibleDays = daysShown;
 
 function renderCurrentStatus() {
   const checkedAt = Date.parse(snapshot.checkedAt);
@@ -71,13 +78,13 @@ function selectDay(card, button) {
   const count = card.querySelector('.day-count');
   if (label.textContent !== button.dataset.label) label.textContent = button.dataset.label;
   if (count.textContent !== button.dataset.count) count.textContent = button.dataset.count;
-  const item = button.parentElement;
-  card.querySelector('[data-shift="-1"]').setAttribute('aria-disabled', String(!item.previousElementSibling));
-  card.querySelector('[data-shift="1"]').setAttribute('aria-disabled', String(!item.nextElementSibling));
+  card.querySelector('[data-shift="-1"]').setAttribute('aria-disabled', String(!dayInDirection(button, -1)));
+  card.querySelector('[data-shift="1"]').setAttribute('aria-disabled', String(!dayInDirection(button, 1)));
 }
 
 function dayInDirection(button, direction) {
   const item = button.parentElement;
+  if (direction < 0 && Number(button.dataset.offset) >= visibleDays - 1) return;
   return (direction < 0 ? item.previousElementSibling : item.nextElementSibling)?.firstElementChild;
 }
 
@@ -95,7 +102,7 @@ for (const card of cards) {
     const target = {
       ArrowLeft: dayInDirection(current, -1),
       ArrowRight: dayInDirection(current, 1),
-      Home: history.firstElementChild.firstElementChild,
+      Home: history.children[daysShown - visibleDays].firstElementChild,
       End: history.lastElementChild.firstElementChild,
     }[event.key];
     if (!target) return;
@@ -134,16 +141,19 @@ function renderHistory() {
       const { up = 0, down = 0 } = days[date] ?? {};
       const checks = up + down;
       const state = checks === 0 ? 'unknown' : down === 0 ? 'up' : up === 0 ? 'down' : 'partial';
-      passing += up;
-      total += checks;
+      if (offset < visibleDays) {
+        passing += up;
+        total += checks;
+      }
 
       const button = buttons[daysShown - 1 - offset] ?? createDay(history);
       button.dataset.state = state;
       button.dataset.date = date;
+      button.dataset.offset = offset;
       button.dataset.label = `${displayDate.format(day)} · ${states[state]}`;
       button.dataset.count = checks ? `${up} de ${checks} checagens bem-sucedidas` : 'Nenhuma checagem registrada';
       button.setAttribute('aria-label', `${button.dataset.label}. ${button.dataset.count}.`);
-      if (date === selectedDate) selected = button;
+      if (date === selectedDate && offset < visibleDays) selected = button;
     }
 
     selectDay(card, selected ?? history.lastElementChild.firstElementChild);
@@ -152,6 +162,21 @@ function renderHistory() {
       : '—';
   }
 }
+
+function renderHistoryWindow() {
+  visibleDays = compactLayout.matches && !expandedHistory ? compactDays : daysShown;
+  availability.dataset.window = visibleDays;
+  historyPeriod.textContent = `Últimos ${visibleDays} dias`;
+  historyToggle.hidden = !compactLayout.matches;
+  historyToggle.textContent = expandedHistory ? `Ver ${compactDays} dias` : `Ver ${daysShown} dias`;
+  renderHistory();
+}
+
+historyToggle.addEventListener('click', () => {
+  expandedHistory = !expandedHistory;
+  renderHistoryWindow();
+});
+compactLayout.addEventListener('change', renderHistoryWindow);
 
 async function refresh() {
   try {
@@ -173,5 +198,5 @@ async function refresh() {
 }
 
 renderCurrentStatus();
-renderHistory();
+renderHistoryWindow();
 setInterval(refresh, 60_000);

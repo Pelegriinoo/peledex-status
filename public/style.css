@@ -35,7 +35,11 @@ main { padding-bottom: 3rem; }
 .section-heading, .service-heading { display: flex; align-items: baseline; justify-content: space-between; gap: .35rem .85rem; flex-wrap: wrap; }
 .section-heading { margin-bottom: 1.25rem; }
 .section-heading h2 { font-size: 1.05rem; font-weight: 680; letter-spacing: -.025em; }
-.section-heading p, .chart-caption, .day-count, .legend { color: var(--muted); font-size: .76rem; }
+.history-range, .chart-caption, .day-count, .legend { color: var(--muted); font-size: .76rem; }
+.history-range { display: flex; align-items: center; gap: .45rem; }
+#history-window { min-height: 2rem; padding: .15rem .5rem; border: 0; border-radius: .4rem; background: var(--inset); color: #e0deeb; font: inherit; cursor: pointer; }
+#history-window:hover { background: #30303c; }
+#history-window:focus-visible { outline: 2px solid var(--focus); outline-offset: 2px; }
 .services { display: grid; gap: 1.35rem; }
 .service { min-width: 0; }
 .service-heading h3 { font-size: .93rem; font-weight: 650; }
@@ -47,6 +51,8 @@ main { padding-bottom: 3rem; }
 [data-state="unknown"] { --state: var(--unknown); --badge-text: #c4c4d0; }
 
 .history { display: grid; grid-template-columns: repeat(90, minmax(0, 1fr)); gap: 2px; list-style: none; padding: 0; margin: .4rem 0 .2rem; }
+[data-window="30"] .history { grid-template-columns: repeat(30, minmax(0, 1fr)); }
+[data-window="30"] .history li:nth-child(-n+60) { display: none; }
 .history li { min-width: 0; }
 .day { width: 100%; height: 2.25rem; display: grid; place-items: center; padding: 0; border: 0; background: none; cursor: pointer; }
 .day::before { width: 100%; height: 1.45rem; content: ''; border-radius: 2px; background: var(--state); }
@@ -72,8 +78,8 @@ main { padding-bottom: 3rem; }
 .legend li { display: flex; align-items: center; gap: .35rem; }
 
 @media (max-width: 39rem) {
-  .history { gap: 1px; }
-  .day::before { border-radius: 1px; }
+  [data-window="90"] .history { gap: 1px; }
+  [data-window="90"] .day::before { border-radius: 1px; }
 }
 
 @media (max-width: 30rem) {

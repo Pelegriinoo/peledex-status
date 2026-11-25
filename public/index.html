@@ -7,9 +7,9 @@
   <meta name="theme-color" content="#09090c">
   <title>Status do PeleDex</title>
   <link rel="icon" href="peledex.svg" type="image/svg+xml">
-  <link rel="stylesheet" href="style.css?v=4">
+  <link rel="stylesheet" href="style.css?v=5">
   <script defer src="status-data.js"></script>
-  <script defer src="status.js?v=4"></script>
+  <script defer src="status.js?v=5"></script>
 </head>
 <body>
   <header class="masthead shell">
@@ -34,10 +34,13 @@
     <section class="availability" aria-labelledby="history-title">
       <div class="section-heading">
         <h2 id="history-title">Disponibilidade</h2>
-        <p>Últimos 90 dias</p>
+        <span class="history-range">
+          <span id="history-period">Últimos 90 dias</span>
+          <button id="history-window" type="button" aria-controls="service-history" hidden>Ver 90 dias</button>
+        </span>
       </div>
 
-      <div class="services">
+      <div class="services" id="service-history">
         <article class="service" data-service="landing">
           <div class="service-heading">
             <h3>Site</h3>
