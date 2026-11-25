@@ -1,3 +1,4 @@
+import { enqueue } from './alerts.mjs';
 import { readFile, writeFile } from 'node:fs/promises';
 
 const snapshotFile = new URL('./public/status-data.js', import.meta.url);
@@ -48,3 +49,5 @@ for (const [service, ok] of results) {
 
 const snapshot = { checkedAt: checkedAt.toISOString(), services };
 await writeFile(snapshotFile, `${assignment}${JSON.stringify(snapshot, null, 2)};\n`);
+
+await enqueue(previous, snapshot);
