@@ -23,9 +23,9 @@ h1, h2, h3, p { margin: 0; }
 .page-label { color: var(--muted); font-size: .83rem; }
 main { padding-bottom: 3rem; }
 
-.summary { display: flex; align-items: flex-start; gap: .85rem; margin: clamp(1.6rem, 6vw, 4.25rem) 0 clamp(1.9rem, 5vw, 3rem); }
-.summary h1 { font-size: clamp(1.65rem, 4.5vw, 2.35rem); font-weight: 730; letter-spacing: -.048em; line-height: 1.1; }
-.summary p { margin-top: .55rem; color: var(--muted); font-size: .83rem; line-height: 1.55; font-variant-numeric: tabular-nums; }
+.summary { display: flex; flex-direction: column; align-items: center; text-align: center; gap: .85rem; margin: clamp(1.6rem, 6vw, 4.25rem) 0 clamp(1.9rem, 5vw, 3rem); }
+.summary h1 { font-size: clamp(1.15rem, 3vw, 1.55rem); font-weight: 730; letter-spacing: -.048em; line-height: 1.1; }
+.summary p { margin-top: .55rem; color: var(--muted); font-size: .75rem; line-height: 1.55; font-variant-numeric: tabular-nums; }
 .status-icon { flex: none; width: 2.35rem; aspect-ratio: 1; display: grid; place-items: center; border-radius: 50%; color: var(--state); background: color-mix(in srgb, var(--state) 14%, var(--surface)); }
 .status-icon svg { width: 1.2rem; fill: none; stroke: currentColor; stroke-width: 2.4; stroke-linecap: round; stroke-linejoin: round; }
 .status-icon path { display: none; }
