@@ -8,7 +8,7 @@ const displayDate = new Intl.DateTimeFormat('pt-BR', { dateStyle: 'medium', time
 const displayCheckTime = new Intl.DateTimeFormat('pt-BR', {
   dateStyle: 'short', timeStyle: 'short', timeZone: 'America/Sao_Paulo',
 });
-const displayPercent = new Intl.NumberFormat('pt-BR', { style: 'percent', maximumFractionDigits: 2 });
+const displayPercent = new Intl.NumberFormat('pt-BR', { style: 'percent', maximumFractionDigits: 3 });
 const states = {
   up: 'Operacional', partial: 'Falhas intermitentes', down: 'Indisponível', unknown: 'Sem dados',
 };
@@ -18,7 +18,12 @@ const summary = document.querySelector('.summary');
 const summaryTitle = document.querySelector('#summary-title');
 const updated = document.querySelector('#updated');
 const availability = document.querySelector('.availability');
-const historyPeriod = document.querySelector('#history-period');
+const overall = document.querySelector('.overall');
+overall.addEventListener('click', () => {
+  const collapse = overall.getAttribute('aria-expanded') === 'true';
+  overall.setAttribute('aria-expanded', String(!collapse));
+  document.querySelector('#service-history').hidden = collapse;
+});
 const historyToggle = document.querySelector('#history-window');
 const compactLayout = matchMedia('(max-width: 39rem)');
 let expandedHistory = false;
@@ -31,7 +36,7 @@ function renderCurrentStatus() {
     const badge = card.querySelector('.badge');
     const state = stale ? 'unknown' : snapshot.services?.[card.dataset.service]?.state ?? 'unknown';
     badge.dataset.state = state;
-    badge.textContent = states[state];
+    badge.setAttribute('aria-label', states[state]);
     return state;
   });
   const downCount = serviceStates.filter((state) => state === 'down').length;
@@ -48,6 +53,8 @@ function renderCurrentStatus() {
     message = 'Todos os serviços operacionais';
   }
 
+  overall.dataset.state = summary.dataset.state;
+  document.querySelector('#overall-state').textContent = states[summary.dataset.state];
   if (summaryTitle.textContent !== message) summaryTitle.textContent = message;
   if (Number.isFinite(checkedAt)) {
     updated.textContent = `Última checagem em ${displayCheckTime.format(checkedAt)} (Brasília).`;
@@ -159,7 +166,7 @@ function renderHistory() {
 
     selectDay(card, selected ?? history.lastElementChild.firstElementChild);
     card.querySelector('.uptime').textContent = total > 0
-      ? `${displayPercent.format(passing / total)} de sucesso`
+      ? `${displayPercent.format(passing / total)} uptime`
       : '—';
   }
 }
@@ -167,7 +174,7 @@ function renderHistory() {
 function renderHistoryWindow() {
   visibleDays = compactLayout.matches && !expandedHistory ? compactDays : daysShown;
   availability.dataset.window = visibleDays;
-  historyPeriod.textContent = `Últimos ${visibleDays} dias`;
+  for (const label of document.querySelectorAll('.range-start')) label.textContent = `Há ${visibleDays} dias`;
   historyToggle.hidden = !compactLayout.matches;
   historyToggle.textContent = expandedHistory ? `Ver ${compactDays} dias` : `Ver ${daysShown} dias`;
   renderHistory();

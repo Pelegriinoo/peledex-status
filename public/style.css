@@ -98,3 +98,17 @@ main { padding-bottom: 3rem; }
 .day-tip { position: fixed; z-index: 2; pointer-events: none; background: #27272a; color: #fafafa; padding: .7rem .85rem; border-radius: .65rem; box-shadow: 0 5px 24px #0006; font-size: .77rem; line-height: 1.55; }
 .day-tip strong { color: var(--state); }
 .day-tip small { display: block; color: #c4c4ca; font-size: inherit; }
+
+.service-heading h3 { display: inline-flex; align-items: center; gap: .45rem; }
+.service-heading .badge { width: .8rem; height: .8rem; justify-content: center; border-radius: 50%; background: var(--state); color: #101015; font: bold .65rem/1 sans-serif; }
+.badge::before { background: none; width: auto; height: auto; content: '·'; }
+.badge[data-state="up"]::before { content: '✓'; }
+.badge[data-state="down"]::before { content: '!'; }
+.overall { display: inline-flex; align-items: center; gap: .5rem; padding: .35rem .65rem; border: 0; border-radius: 999px; color: #fafafa; background: var(--inset); font: inherit; cursor: pointer; }
+.overall::before { content: ''; width: .55rem; height: .55rem; border-radius: 50%; background: var(--state,var(--unknown)); }
+.overall[aria-expanded="false"] > :last-child { transform: rotate(-90deg); }
+.services[hidden] { display: none; }
+.chart-caption { display: flex; justify-content: space-between; }
+.service-heading .uptime { color: var(--up); font-size: .78rem; }
+.history { gap: 1px; }
+.day::before { height: 1.85rem; }

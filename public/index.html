@@ -7,9 +7,9 @@
   <meta name="theme-color" content="#09090c">
   <title>Status do PeleDex</title>
   <link rel="icon" href="peledex.svg" type="image/svg+xml">
-  <link rel="stylesheet" href="style.css?v=6">
+  <link rel="stylesheet" href="style.css?v=7">
   <script defer src="status-data.js"></script>
-  <script defer src="status.js?v=6"></script>
+  <script defer src="status.js?v=7"></script>
 </head>
 <body>
   <header class="masthead shell">
@@ -33,9 +33,9 @@
 
     <section class="availability" aria-labelledby="history-title">
       <div class="section-heading">
-        <h2 id="history-title">Disponibilidade</h2>
+        <h2 id="history-title">Status por serviço</h2>
         <span class="history-range">
-          <span id="history-period">Últimos 90 dias</span>
+          <button class="overall" type="button" aria-expanded="true" aria-controls="service-history"><span id="overall-state">Sem dados</span> <span aria-hidden="true">⌄</span></button>
           <button id="history-window" type="button" aria-controls="service-history" hidden>Ver 90 dias</button>
         </span>
       </div>
@@ -43,11 +43,11 @@
       <div class="services" id="service-history">
         <article class="service" data-service="landing">
           <div class="service-heading">
-            <h3>Site</h3>
-            <span class="badge" data-state="unknown">Sem dados</span>
+            <h3><span class="badge" data-state="unknown" role="img" aria-label="Sem dados"></span>Site</h3>
+            <span class="uptime">—</span>
           </div>
           <ol class="history" aria-label="Histórico diário do site"></ol>
-          <div class="chart-caption"><span>Início do período</span><span class="uptime">—</span><span>Hoje</span></div>
+          <div class="chart-caption"><span class="range-start">Há 90 dias</span><span>Hoje</span></div>
           <div class="day-details">
             <div aria-live="polite"><p class="day-label"></p><p class="day-count"></p></div>
             <div class="day-nav">
@@ -60,11 +60,11 @@
 
         <article class="service" data-service="health">
           <div class="service-heading">
-            <h3>API e banco de dados</h3>
-            <span class="badge" data-state="unknown">Sem dados</span>
+            <h3><span class="badge" data-state="unknown" role="img" aria-label="Sem dados"></span>API e banco de dados</h3>
+            <span class="uptime">—</span>
           </div>
           <ol class="history" aria-label="Histórico diário da API e do banco de dados"></ol>
-          <div class="chart-caption"><span>Início do período</span><span class="uptime">—</span><span>Hoje</span></div>
+          <div class="chart-caption"><span class="range-start">Há 90 dias</span><span>Hoje</span></div>
           <div class="day-details">
             <div aria-live="polite"><p class="day-label"></p><p class="day-count"></p></div>
             <div class="day-nav">
