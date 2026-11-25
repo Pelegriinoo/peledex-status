@@ -149,6 +149,7 @@ function renderHistory() {
       const button = buttons[daysShown - 1 - offset] ?? createDay(history);
       button.dataset.state = state;
       button.dataset.date = date;
+      button.dataset.failures = down ? down + (down === 1 ? ' checagem com falha' : ' checagens com falha') : '';
       button.dataset.offset = offset;
       button.dataset.label = `${displayDate.format(day)} · ${states[state]}`;
       button.dataset.count = checks ? `${up} de ${checks} checagens bem-sucedidas` : 'Nenhuma checagem registrada';
@@ -200,3 +201,46 @@ async function refresh() {
 renderCurrentStatus();
 renderHistoryWindow();
 setInterval(refresh, 60_000);
+
+const tooltip = document.createElement('div');
+tooltip.className = 'day-tip';
+tooltip.hidden = true;
+tooltip.setAttribute('aria-hidden', 'true');
+const tipStatus = document.createElement('strong');
+const tipDate = document.createElement('small');
+const tipFailures = document.createElement('small');
+tooltip.append(tipStatus, tipDate, tipFailures);
+document.body.append(tooltip);
+
+function hideTooltip() {
+  tooltip.hidden = true;
+}
+
+function showTooltip(button) {
+  tooltip.dataset.state = button.dataset.state;
+  tipStatus.textContent = states[button.dataset.state];
+  tipDate.textContent = displayDate.format(new Date(button.dataset.date + 'T00:00:00Z'));
+  tipFailures.textContent = button.dataset.failures;
+  tooltip.hidden = false;
+  const bar = button.getBoundingClientRect();
+  const x = bar.left + (bar.width - tooltip.offsetWidth) / 2;
+  tooltip.style.left = Math.max(8, Math.min(x, innerWidth - tooltip.offsetWidth - 8)) + 'px';
+  const above = bar.top - tooltip.offsetHeight - 6;
+  tooltip.style.top = (above >= 8 ? above : bar.bottom + 6) + 'px';
+}
+
+for (const history of document.querySelectorAll('.history')) {
+  history.addEventListener('pointerover', event => {
+    const day = event.target.closest('.day');
+    if (day && event.pointerType !== 'touch') showTooltip(day);
+  });
+  history.addEventListener('focusin', event => {
+    if (event.target.matches('.day:focus-visible')) showTooltip(event.target);
+  });
+  history.addEventListener('pointerleave', hideTooltip);
+  history.addEventListener('focusout', hideTooltip);
+  history.addEventListener('click', hideTooltip);
+}
+document.addEventListener('keydown', event => { if (event.key === 'Escape') hideTooltip(); });
+window.addEventListener('scroll', hideTooltip, { passive: true });
+window.addEventListener('resize', hideTooltip);
