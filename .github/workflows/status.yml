@@ -35,7 +35,7 @@ jobs:
           git add public/status-data.js
           git commit -m 'Atualiza histórico de disponibilidade'
           git push
-      - uses: actions/upload-pages-artifact@v4
+      - uses: actions/upload-pages-artifact@v5
         with:
           path: public
 
