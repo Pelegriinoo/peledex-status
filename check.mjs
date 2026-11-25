@@ -31,7 +31,7 @@ const results = await Promise.all(targets.map(async ([service, url]) => [service
 const checkedAt = new Date();
 const today = dateKey.format(checkedAt);
 const cutoff = new Date(`${today}T00:00:00Z`);
-cutoff.setUTCDate(cutoff.getUTCDate() - 29);
+cutoff.setUTCDate(cutoff.getUTCDate() - 89);
 const firstDay = cutoff.toISOString().slice(0, 10);
 const services = {};
 

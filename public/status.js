@@ -1,4 +1,4 @@
-const daysShown = 30;
+const daysShown = 90;
 const staleAfterMs = 20 * 60 * 1000;
 const snapshotAssignment = 'globalThis.peledexStatus = ';
 let snapshot = globalThis.peledexStatus ?? {};
@@ -16,7 +16,6 @@ const cards = [...document.querySelectorAll('[data-service]')];
 const summary = document.querySelector('.summary');
 const summaryTitle = document.querySelector('#summary-title');
 const updated = document.querySelector('#updated');
-const detail = document.querySelector('#daily-detail');
 
 function renderCurrentStatus() {
   const checkedAt = Date.parse(snapshot.checkedAt);
@@ -53,15 +52,62 @@ function createDay(history) {
   const button = document.createElement('button');
   button.type = 'button';
   button.className = 'day';
+  button.tabIndex = -1;
   button.setAttribute('aria-pressed', 'false');
-  button.addEventListener('click', () => {
-    document.querySelector('.day[aria-pressed="true"]')?.setAttribute('aria-pressed', 'false');
-    button.setAttribute('aria-pressed', 'true');
-    detail.textContent = button.dataset.detail;
-  });
   item.append(button);
   history.append(item);
   return button;
+}
+
+function selectDay(card, button) {
+  const previous = card.querySelector('.day[aria-pressed="true"]');
+  if (previous && previous !== button) {
+    previous.setAttribute('aria-pressed', 'false');
+    previous.tabIndex = -1;
+  }
+  button.setAttribute('aria-pressed', 'true');
+  button.tabIndex = 0;
+  const label = card.querySelector('.day-label');
+  const count = card.querySelector('.day-count');
+  if (label.textContent !== button.dataset.label) label.textContent = button.dataset.label;
+  if (count.textContent !== button.dataset.count) count.textContent = button.dataset.count;
+  const item = button.parentElement;
+  card.querySelector('[data-shift="-1"]').setAttribute('aria-disabled', String(!item.previousElementSibling));
+  card.querySelector('[data-shift="1"]').setAttribute('aria-disabled', String(!item.nextElementSibling));
+}
+
+function dayInDirection(button, direction) {
+  const item = button.parentElement;
+  return (direction < 0 ? item.previousElementSibling : item.nextElementSibling)?.firstElementChild;
+}
+
+for (const card of cards) {
+  const history = card.querySelector('.history');
+  history.addEventListener('click', (event) => {
+    const button = event.target.closest('.day');
+    if (button) selectDay(card, button);
+  });
+  history.addEventListener('keydown', (event) => {
+    const current = event.target.closest('.day');
+    if (!current) return;
+    const target = {
+      ArrowLeft: dayInDirection(current, -1),
+      ArrowRight: dayInDirection(current, 1),
+      Home: history.firstElementChild.firstElementChild,
+      End: history.lastElementChild.firstElementChild,
+    }[event.key];
+    if (!target) return;
+    event.preventDefault();
+    selectDay(card, target);
+    target.focus();
+  });
+  for (const control of card.querySelectorAll('[data-shift]')) {
+    control.addEventListener('click', () => {
+      const current = history.querySelector('.day[aria-pressed="true"]');
+      const target = dayInDirection(current, Number(control.dataset.shift));
+      if (target) selectDay(card, target);
+    });
+  }
 }
 
 function renderHistory() {
@@ -69,33 +115,34 @@ function renderHistory() {
   for (const card of cards) {
     const history = card.querySelector('.history');
     const buttons = history.querySelectorAll('.day');
-    const serviceName = card.querySelector('h3').textContent;
+    const selectedDate = history.querySelector('.day[aria-pressed="true"]')?.dataset.date;
     const days = snapshot.services?.[card.dataset.service]?.days ?? {};
     let passing = 0;
     let total = 0;
+    let selected;
 
     for (let offset = daysShown - 1; offset >= 0; offset--) {
       const day = new Date(today - offset * 86_400_000);
-      const { up = 0, down = 0 } = days[day.toISOString().slice(0, 10)] ?? {};
+      const date = day.toISOString().slice(0, 10);
+      const { up = 0, down = 0 } = days[date] ?? {};
       const checks = up + down;
       const state = checks === 0 ? 'unknown' : down === 0 ? 'up' : up === 0 ? 'down' : 'partial';
-      const label = `${serviceName}, ${displayDate.format(day)}, ${states[state]}`;
       passing += up;
       total += checks;
 
       const button = buttons[daysShown - 1 - offset] ?? createDay(history);
       button.dataset.state = state;
-      button.setAttribute('aria-label', label);
-      const counts = checks ? ` ${up} checagens bem-sucedidas de ${checks}.` : '';
-      button.dataset.detail = `${label}.${counts}`;
-      if (button.getAttribute('aria-pressed') === 'true' && detail.textContent !== button.dataset.detail) {
-        detail.textContent = button.dataset.detail;
-      }
+      button.dataset.date = date;
+      button.dataset.label = `${displayDate.format(day)} · ${states[state]}`;
+      button.dataset.count = checks ? `${up} de ${checks} checagens bem-sucedidas` : 'Nenhuma checagem registrada';
+      button.setAttribute('aria-label', `${button.dataset.label}. ${button.dataset.count}.`);
+      if (date === selectedDate) selected = button;
     }
 
+    selectDay(card, selected ?? history.lastElementChild.firstElementChild);
     card.querySelector('.uptime').textContent = total > 0
-      ? `${displayPercent.format(passing / total)} nas checagens`
-      : 'Sem checagens';
+      ? displayPercent.format(passing / total)
+      : '—';
   }
 }
 
