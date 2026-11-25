@@ -27,12 +27,44 @@ export function send(events, transport = spawnSync) {
   const mailbox = /^[^\s<>@:]+@[^\s<>@:]+\.[^\s<>@:]+$/;
   if (!password || !mailbox.test(from ?? '') || !mailbox.test(to ?? '')) throw Error('Confira os secrets de e-mail.');
   const names = { landing: 'Site', health: 'API e banco de dados' };
-  const lines = events.map(({ service, state, at }) => {
-    const time = new Date(at).toLocaleString('pt-BR', { timeZone: 'America/Sao_Paulo' });
-    return names[service] + (state === 'up' ? ' voltou a responder' : ' ficou indisponível') + ' em ' + time + ' (Brasília).';
+  const statusUrl = 'https://pelegriinoo.github.io/peledex-status/';
+  const changes = events.map(({ service, state, at }) => ({
+    name: names[service] ?? 'Serviço monitorado',
+    recovered: state === 'up',
+    time: new Intl.DateTimeFormat('pt-BR', {
+      dateStyle: 'long', timeStyle: 'short', timeZone: 'America/Sao_Paulo',
+    }).format(new Date(at)),
+  }));
+  const first = changes[0];
+  const title = changes.length === 1
+    ? first.name + (first.recovered ? ' voltou a responder' : ' indisponível')
+    : changes.length + ' mudanças nos serviços do PeleDex';
+  const rows = changes.map(({ name, recovered, time }) => {
+    const state = recovered ? 'Operacional' : 'Indisponível';
+    const color = recovered ? '#6ee7b7' : '#fda4af';
+    return '<tr><td style="padding:16px;background:#27272a;border-radius:10px">' +
+      '<strong style="color:' + color + '">' + state + '</strong><br>' +
+      '<b style="color:#fafafa">' + name + '</b><br>' +
+      '<span style="color:#d4d4d8">Detectado em ' + time + ' (Brasília)</span></td></tr>';
   });
-  const subject = events.every(e => e.state === 'down') ? 'Queda' : events.every(e => e.state === 'up') ? 'Recuperacao' : 'Mudancas de status';
-  const input = ['From: PeleDex <' + from + '>', 'To: ' + to, 'Subject: [PeleDex] ' + subject, 'MIME-Version: 1.0', 'Content-Type: text/plain; charset=UTF-8', 'Content-Transfer-Encoding: base64', '', Buffer.from(lines.join('\n')).toString('base64').match(/.{1,76}/g).join('\r\n'), ''].join('\r\n');
+  const explanation = changes.length === 1 && !first.recovered
+    ? 'Você receberá outro aviso quando o monitor detectar a recuperação.'
+    : 'O histórico de cada serviço está disponível na página de status.';
+  const plain = [title, ...changes.map(c => c.name + ' — ' + (c.recovered ? 'operacional' : 'indisponível') + ', ' + c.time + ' (Brasília).'), explanation, statusUrl].join('\n\n');
+  const html = '<!doctype html><html lang="pt-BR"><body style="margin:0;font:15px/1.5 Arial,sans-serif">' +
+    '<div style="max-width:520px;margin:auto;padding:24px;background:#18181b;color:#fafafa;border-radius:14px">' +
+    '<b>PeleDex</b><h1 style="font-size:23px;line-height:1.25">' + title + '</h1>' +
+    '<table role="presentation" width="100%" cellspacing="4" cellpadding="0">' + rows.join('') + '</table>' +
+    '<p style="color:#d4d4d8">' + explanation + '</p><a href="' + statusUrl +
+    '" style="display:inline-block;padding:10px 16px;background:#fafafa;color:#18181b;border-radius:8px;text-decoration:none;font-weight:bold">Ver status dos serviços</a></div></body></html>';
+  const boundary = 'peledex-alternative';
+  function part(type, content) {
+    const encoded = Buffer.from(content).toString('base64').match(/.{1,76}/g).join('\r\n');
+    return ['--' + boundary, 'Content-Type: ' + type + '; charset=UTF-8', 'Content-Transfer-Encoding: base64', '', encoded].join('\r\n');
+  }
+  const subject = Buffer.from(title).toString('base64');
+  const input = ['From: PeleDex Status <' + from + '>', 'To: ' + to, 'Subject: [PeleDex] =?UTF-8?B?' + subject + '?=', 'MIME-Version: 1.0',
+    'Content-Type: multipart/alternative; boundary="' + boundary + '"', '', part('text/plain', plain), part('text/html', html), '--' + boundary + '--', ''].join('\r\n');
   const result = transport('curl', ['--silent','--max-time','30','--url','smtps://smtp.gmail.com:465','--user',from + ':' + password.replace(/ /g,''),'--mail-from',from,'--mail-rcpt',to,'--upload-file','-'], { input, stdio: ['pipe','ignore','ignore'] });
   if (result.status !== 0) throw Error('Falha no envio pelo Gmail. Alertas pendentes para a próxima execução.');
 }
