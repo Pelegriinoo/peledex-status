@@ -85,7 +85,9 @@ for (const card of cards) {
   const history = card.querySelector('.history');
   history.addEventListener('click', (event) => {
     const button = event.target.closest('.day');
-    if (button) selectDay(card, button);
+    if (!button) return;
+    card.dataset.inspecting = '';
+    selectDay(card, button);
   });
   history.addEventListener('keydown', (event) => {
     const current = event.target.closest('.day');
@@ -98,6 +100,7 @@ for (const card of cards) {
     }[event.key];
     if (!target) return;
     event.preventDefault();
+    card.dataset.inspecting = '';
     selectDay(card, target);
     target.focus();
   });
@@ -108,6 +111,10 @@ for (const card of cards) {
       if (target) selectDay(card, target);
     });
   }
+  card.querySelector('[data-close]').addEventListener('click', () => {
+    delete card.dataset.inspecting;
+    history.querySelector('.day[aria-pressed="true"]').focus();
+  });
 }
 
 function renderHistory() {
@@ -141,7 +148,7 @@ function renderHistory() {
 
     selectDay(card, selected ?? history.lastElementChild.firstElementChild);
     card.querySelector('.uptime').textContent = total > 0
-      ? displayPercent.format(passing / total)
+      ? `${displayPercent.format(passing / total)} de sucesso`
       : '—';
   }
 }
