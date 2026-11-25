@@ -1,0 +1,64 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="Disponibilidade dos serviços do PeleDex nos últimos 30 dias.">
+  <title>Status do PeleDex</title>
+  <link rel="stylesheet" href="style.css">
+  <script defer src="status-data.js"></script>
+  <script defer src="status.js"></script>
+</head>
+<body>
+  <main>
+    <header class="page-header">
+      <p class="wordmark">Pele<span>Dex</span></p>
+      <h1>Status dos serviços</h1>
+    </header>
+
+    <section class="summary" data-state="unknown" aria-labelledby="summary-title">
+      <span class="signal" aria-hidden="true"></span>
+      <div>
+        <h2 id="summary-title" role="status">Aguardando dados de monitoramento</h2>
+        <p id="updated">Checagens programadas a cada 5 minutos.</p>
+      </div>
+    </section>
+
+    <section aria-labelledby="history-title">
+      <h2 class="section-title" id="history-title">Últimos 30 dias</h2>
+      <div class="services">
+        <article class="service" data-service="landing">
+          <div class="service-heading">
+            <div>
+              <h3>Site</h3>
+              <p>Página inicial do PeleDex</p>
+            </div>
+            <span class="badge" data-state="unknown">Sem dados</span>
+          </div>
+          <ol class="history" aria-label="Histórico diário do site"></ol>
+          <div class="history-caption"><span>30 dias atrás</span><span class="uptime">—</span><span>Hoje</span></div>
+        </article>
+        <article class="service" data-service="health">
+          <div class="service-heading">
+            <div>
+              <h3>API e banco de dados</h3>
+              <p>API da VPS e MongoDB via PeleDex</p>
+            </div>
+            <span class="badge" data-state="unknown">Sem dados</span>
+          </div>
+          <ol class="history" aria-label="Histórico diário da API e do banco de dados"></ol>
+          <div class="history-caption"><span>30 dias atrás</span><span class="uptime">—</span><span>Hoje</span></div>
+        </article>
+      </div>
+      <ul class="legend" aria-label="Legenda do histórico">
+        <li data-state="up">Operacional</li>
+        <li data-state="partial">Falhas intermitentes</li>
+        <li data-state="down">Indisponível</li>
+        <li data-state="unknown">Sem dados</li>
+      </ul>
+      <p id="daily-detail" class="daily-detail" aria-live="polite">Selecione um dia para ver as checagens registradas.</p>
+    </section>
+    <noscript><p>Ative o JavaScript para consultar o status e o histórico.</p></noscript>
+  </main>
+</body>
+</html>

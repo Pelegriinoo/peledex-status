@@ -1,0 +1,54 @@
+name: Status do PeleDex
+
+on:
+  schedule:
+    - cron: '3-58/5 * * * *'
+  workflow_dispatch:
+
+concurrency:
+  group: peledex-status
+  cancel-in-progress: false
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    timeout-minutes: 4
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          ref: ${{ github.event.repository.default_branch }}
+      - uses: actions/setup-node@v6
+        with:
+          node-version: '24'
+          package-manager-cache: false
+      - name: Checar serviços
+        env:
+          LANDING_URL: ${{ secrets.LANDING_URL }}
+          HEALTH_URL: ${{ secrets.HEALTH_URL }}
+        run: node check.mjs
+      - name: Gravar histórico
+        run: |
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add public/status-data.js
+          git commit -m 'Atualiza histórico de disponibilidade'
+          git push
+      - uses: actions/upload-pages-artifact@v4
+        with:
+          path: public
+
+  publish:
+    needs: check
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    permissions:
+      pages: write
+      id-token: write
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - uses: actions/deploy-pages@v4
+        id: deployment
