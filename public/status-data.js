@@ -1,5 +1,5 @@
 globalThis.peledexStatus = {
-  "checkedAt": "2026-11-27T02:53:42.135Z",
+  "checkedAt": "2026-11-27T03:00:26.944Z",
   "services": {
     "landing": {
       "state": "up",
@@ -10,6 +10,10 @@ globalThis.peledexStatus = {
         },
         "2026-11-26": {
           "up": 157,
+          "down": 0
+        },
+        "2026-11-27": {
+          "up": 1,
           "down": 0
         }
       }
@@ -23,6 +27,10 @@ globalThis.peledexStatus = {
         },
         "2026-11-26": {
           "up": 157,
+          "down": 0
+        },
+        "2026-11-27": {
+          "up": 1,
           "down": 0
         }
       }
